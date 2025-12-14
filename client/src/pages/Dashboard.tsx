@@ -1,11 +1,24 @@
 import { dummyGroups, dummyActivities } from "@/lib/mockData";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useAuth } from "@/lib/auth";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Users, Clock, ArrowUpRight, PlusCircle } from "lucide-react";
 import Layout from "@/components/Layout";
 
 export default function Dashboard() {
+  const { user, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      setLocation("/");
+    }
+  }, [user, isLoading, setLocation]);
+
+  if (isLoading || !user) return null;
+
   return (
     <Layout>
       <div className="h-full overflow-y-auto p-6 md:p-8">
@@ -14,7 +27,7 @@ export default function Dashboard() {
           {/* Welcome Section */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Hello, Alex 👋</h1>
+              <h1 className="text-3xl font-bold mb-2">Hello, {user.name.split(' ')[0]} 👋</h1>
               <p className="text-muted-foreground">Ready to crush your midterms? You have 3 study sessions today.</p>
             </div>
             <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl h-11 px-6 shadow-lg shadow-primary/20">

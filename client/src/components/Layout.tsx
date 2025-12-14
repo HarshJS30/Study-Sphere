@@ -12,6 +12,7 @@ import {
   MoreVertical
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { useAuth } from "@/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ import {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
+  const { user, logout } = useAuth();
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
@@ -94,13 +96,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="flex flex-col items-center gap-4 mt-auto">
-          <Button variant="ghost" size="icon" className="w-12 h-12 rounded-2xl text-muted-foreground hover:bg-white/5 hover:text-foreground">
-            <Settings className="w-6 h-6" />
-          </Button>
-          <Avatar className="w-10 h-10 border-2 border-primary/20">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+          <Tooltip>
+             <TooltipTrigger asChild>
+               <Button variant="ghost" size="icon" onClick={logout} className="w-12 h-12 rounded-2xl text-muted-foreground hover:bg-red-500/10 hover:text-red-500">
+                  <LogOut className="w-6 h-6" />
+               </Button>
+             </TooltipTrigger>
+             <TooltipContent side="right">Sign Out</TooltipContent>
+          </Tooltip>
+          
+          <Tooltip>
+             <TooltipTrigger asChild>
+               <Avatar className="w-10 h-10 border-2 border-primary/20 cursor-pointer hover:border-primary transition-colors">
+                  <AvatarImage src={user?.avatar || "https://github.com/shadcn.png"} />
+                  <AvatarFallback>{user?.name?.[0] || "U"}</AvatarFallback>
+               </Avatar>
+             </TooltipTrigger>
+             <TooltipContent side="right">{user?.name || "User"}</TooltipContent>
+          </Tooltip>
         </div>
       </aside>
 

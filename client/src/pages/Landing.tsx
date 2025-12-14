@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,8 @@ import {
   Users, 
   ArrowRight, 
   CheckCircle2,
-  GraduationCap
+  GraduationCap,
+  Loader2
 } from "lucide-react";
 
 import heroBg from "@assets/generated_images/vibrant_abstract_gradient_background_with_glass_shapes.png";
@@ -18,6 +20,27 @@ import heroIcon from "@assets/generated_images/3d_glass_icon_of_a_study_group_ch
 
 export default function Landing() {
   const [isLogin, setIsLogin] = useState(true);
+  const { login, signup, isLoading } = useAuth();
+  
+  // Form State
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [collegeId, setCollegeId] = useState("");
+  const [name, setName] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isLogin) {
+      // For demo, we just need email to simulate "login"
+      // In real world, we'd check password
+      // Extracting name from email for demo personality
+      const demoName = email.split('@')[0] || "Student";
+      const formatName = demoName.charAt(0).toUpperCase() + demoName.slice(1);
+      login(formatName, email);
+    } else {
+      signup(name, email, collegeId);
+    }
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden text-foreground">
@@ -125,12 +148,30 @@ export default function Landing() {
               <p className="text-muted-foreground text-sm">Enter your details to access your study groups.</p>
             </div>
 
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input 
+                    id="name" 
+                    placeholder="Jane Doe" 
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="bg-black/20 border-white/10 focus:border-primary/50 h-12 rounded-xl" 
+                  />
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="email">College Email (.edu)</Label>
                 <Input 
                   id="email" 
+                  type="email"
                   placeholder="student@university.edu" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                   className="bg-black/20 border-white/10 focus:border-primary/50 h-12 rounded-xl" 
                 />
               </div>
@@ -141,6 +182,9 @@ export default function Landing() {
                   <Input 
                     id="id" 
                     placeholder="12345678" 
+                    value={collegeId}
+                    onChange={(e) => setCollegeId(e.target.value)}
+                    required
                     className="bg-black/20 border-white/10 focus:border-primary/50 h-12 rounded-xl" 
                   />
                 </div>
@@ -152,19 +196,21 @@ export default function Landing() {
                   id="password" 
                   type="password" 
                   placeholder="••••••••" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                   className="bg-black/20 border-white/10 focus:border-primary/50 h-12 rounded-xl" 
                 />
               </div>
 
-              <Link href="/dashboard">
-                <Button className="w-full h-12 rounded-xl text-base font-semibold bg-primary hover:bg-primary/90 mt-4 shadow-lg shadow-primary/25">
-                  {isLogin ? "Sign In" : "Verify & Join"}
-                </Button>
-              </Link>
+              <Button type="submit" className="w-full h-12 rounded-xl text-base font-semibold bg-primary hover:bg-primary/90 mt-4 shadow-lg shadow-primary/25" disabled={isLoading}>
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isLogin ? "Sign In" : "Verify & Join")}
+              </Button>
               
               <div className="text-center text-sm">
                 <span className="text-muted-foreground">{isLogin ? "New here?" : "Already verified?"}</span>{" "}
                 <button 
+                  type="button"
                   onClick={() => setIsLogin(!isLogin)}
                   className="text-primary hover:underline font-medium"
                 >

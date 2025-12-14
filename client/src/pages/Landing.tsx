@@ -28,17 +28,12 @@ export default function Landing() {
   const [collegeId, setCollegeId] = useState("");
   const [name, setName] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLogin) {
-      // For demo, we just need email to simulate "login"
-      // In real world, we'd check password
-      // Extracting name from email for demo personality
-      const demoName = email.split('@')[0] || "Student";
-      const formatName = demoName.charAt(0).toUpperCase() + demoName.slice(1);
-      login(formatName, email);
+      await login(email, password);
     } else {
-      signup(name, email, collegeId);
+      await signup(name, email, collegeId, password);
     }
   };
 

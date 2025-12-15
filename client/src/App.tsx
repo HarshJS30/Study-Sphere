@@ -10,6 +10,7 @@ import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import GroupView from "@/pages/GroupView";
 import VideoCall from "@/pages/VideoCall";
+import Messages from "@/pages/Messages";
 
 function Router() {
   return (
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/group/:id" component={GroupView} />
+      <Route path="/messages" component={Messages} />
       <Route path="/video/:id" component={VideoCall} />
       <Route component={NotFound} />
     </Switch>

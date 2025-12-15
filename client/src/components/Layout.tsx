@@ -59,6 +59,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 variant="ghost" 
                 size="icon" 
                 className={`w-12 h-12 rounded-2xl relative ${location.includes("/messages") ? "bg-white/10 text-primary" : "text-muted-foreground hover:bg-white/5 hover:text-foreground"}`}
+                onClick={() => setLocation("/messages")}
               >
                 <MessageSquare className="w-6 h-6" />
                 <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background" />

@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "wouter";
 import Layout from "@/components/Layout";
-import { dummyResources } from "@/lib/mockData";
 import { useAuth } from "@/lib/auth";
 import { useData } from "@/lib/data";
 import { 
@@ -31,7 +30,7 @@ import { motion } from "framer-motion";
 
 export default function GroupView() {
   const { id } = useParams();
-  const { groups, messages, addMessage } = useData();
+  const { groups, messages, addMessage, resources } = useData();
   const { user } = useAuth();
   
   const group = groups.find(g => g.id === Number(id));
@@ -246,7 +245,7 @@ export default function GroupView() {
                 <BookOpen className="w-5 h-5 text-primary" /> Resources
               </h3>
               <div className="space-y-3">
-                {dummyResources.map((res, i) => (
+                {resources.map((res, i) => (
                   <div key={i} className="group p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 transition-all cursor-pointer">
                     <div className="flex items-start justify-between mb-2">
                       <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">

@@ -1,11 +1,10 @@
-import { dummyActivities } from "@/lib/mockData";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { useData } from "@/lib/data";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Users, Clock, ArrowUpRight, PlusCircle, X } from "lucide-react";
+import { Users, Clock, ArrowUpRight, PlusCircle, X, FileText, MoreHorizontal } from "lucide-react";
 import Layout from "@/components/Layout";
 import {
   Dialog,
@@ -29,7 +28,7 @@ import {
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
-  const { groups, addGroup } = useData();
+  const { groups, addGroup, activities } = useData();
   const [, setLocation] = useLocation();
   const [isNewGroupOpen, setIsNewGroupOpen] = useState(false);
 
@@ -226,10 +225,10 @@ export default function Dashboard() {
           <div>
             <h2 className="text-xl font-bold mb-6">Recent Activity</h2>
             <div className="glass rounded-2xl border border-white/5 overflow-hidden">
-              {dummyActivities.map((activity, i) => (
+              {activities.map((activity, i) => (
                 <div key={i} className="flex items-center gap-4 p-4 border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activity.type === 'upload' ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'}`}>
-                    {activity.icon}
+                    {activity.type === 'upload' ? <FileText className="w-5 h-5"/> : activity.type === 'call' ? <Users className="w-5 h-5"/> : <MoreHorizontal className="w-5 h-5"/>}
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">

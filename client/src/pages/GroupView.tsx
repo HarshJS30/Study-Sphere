@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "wouter";
 import Layout from "@/components/Layout";
-import { dummyGroups, dummyMessages, dummyResources } from "@/lib/mockData";
+import { dummyResources } from "@/lib/mockData";
+import { useAuth } from "@/lib/auth";
+import { useData } from "@/lib/data";
 import { 
   Hash, 
   Volume2, 
@@ -29,23 +31,20 @@ import { motion } from "framer-motion";
 
 export default function GroupView() {
   const { id } = useParams();
-  const group = dummyGroups.find(g => g.id === Number(id)) || dummyGroups[0];
-  const [messages, setMessages] = useState(dummyMessages);
+  const { groups, messages, addMessage } = useData();
+  const { user } = useAuth();
+  
+  const group = groups.find(g => g.id === Number(id));
+  const groupMessages = messages[Number(id)] || [];
+
   const [inputValue, setInputValue] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const sendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || !user || !id) return;
     
-    setMessages([...messages, {
-      id: messages.length + 1,
-      user: "You",
-      avatar: "https://github.com/shadcn.png",
-      content: inputValue,
-      time: "Just now",
-      role: "Member"
-    }]);
+    addMessage(Number(id), inputValue, user);
     setInputValue("");
   };
 
@@ -53,7 +52,9 @@ export default function GroupView() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [groupMessages]);
+
+  if (!group) return <div>Group not found</div>;
 
   return (
     <Layout>
@@ -132,12 +133,12 @@ export default function GroupView() {
           {/* User Status Bar */}
           <div className="p-3 bg-black/20 border-t border-white/5 flex items-center gap-3">
             <Avatar className="w-9 h-9">
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>ME</AvatarFallback>
+              <AvatarImage src={user?.avatar} />
+              <AvatarFallback>{user?.name?.[0]}</AvatarFallback>
             </Avatar>
             <div className="flex-1 overflow-hidden">
-              <div className="text-sm font-medium truncate">Alex Johnson</div>
-              <div className="text-xs text-muted-foreground truncate">#1234</div>
+              <div className="text-sm font-medium truncate">{user?.name}</div>
+              <div className="text-xs text-muted-foreground truncate">#{user?.collegeId || "1234"}</div>
             </div>
             <div className="flex gap-1">
               <Button variant="ghost" size="icon" className="w-7 h-7">
@@ -168,7 +169,7 @@ export default function GroupView() {
                     </Avatar>
                   ))}
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs border-2 border-background">
-                    +12
+                    +{group.members}
                   </div>
                 </div>
                 <Separator orientation="vertical" className="h-6" />
@@ -182,24 +183,24 @@ export default function GroupView() {
 
           <ScrollArea ref={scrollRef} className="flex-1 p-6">
              <div className="flex flex-col gap-6">
-                {messages.map((msg) => (
+                {groupMessages.map((msg) => (
                   <motion.div 
                     key={msg.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }} 
-                    className={`flex gap-4 group ${msg.user === 'You' ? 'flex-row-reverse' : ''}`}
+                    className={`flex gap-4 group ${msg.user === user?.name ? 'flex-row-reverse' : ''}`}
                   >
                     <Avatar className="w-10 h-10 mt-1 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
                       <AvatarImage src={msg.avatar} />
                       <AvatarFallback>{msg.user[0]}</AvatarFallback>
                     </Avatar>
-                    <div className={`flex flex-col max-w-[70%] ${msg.user === 'You' ? 'items-end' : 'items-start'}`}>
+                    <div className={`flex flex-col max-w-[70%] ${msg.user === user?.name ? 'items-end' : 'items-start'}`}>
                       <div className="flex items-baseline gap-2 mb-1">
                         <span className="font-bold hover:underline cursor-pointer">{msg.user}</span>
                         <span className="text-xs text-muted-foreground">{msg.time}</span>
                         {msg.role === 'Admin' && <Badge variant="outline" className="text-[10px] h-4 px-1 border-primary/50 text-primary">Admin</Badge>}
                       </div>
-                      <div className={`p-3 rounded-2xl ${msg.user === 'You' ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-white/5 border border-white/5 rounded-tl-sm'}`}>
+                      <div className={`p-3 rounded-2xl ${msg.user === user?.name ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-white/5 border border-white/5 rounded-tl-sm'}`}>
                         <p className="text-sm leading-relaxed">{msg.content}</p>
                       </div>
                     </div>

@@ -1,21 +1,58 @@
-import { dummyGroups, dummyActivities } from "@/lib/mockData";
+import { dummyActivities } from "@/lib/mockData";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
-import { useEffect } from "react";
+import { useData } from "@/lib/data";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Users, Clock, ArrowUpRight, PlusCircle } from "lucide-react";
+import { Users, Clock, ArrowUpRight, PlusCircle, X } from "lucide-react";
 import Layout from "@/components/Layout";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
+  const { groups, addGroup } = useData();
   const [, setLocation] = useLocation();
+  const [isNewGroupOpen, setIsNewGroupOpen] = useState(false);
+
+  // New Group Form State
+  const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupSubject, setNewGroupSubject] = useState("");
+  const [newGroupDesc, setNewGroupDesc] = useState("");
 
   useEffect(() => {
     if (!isLoading && !user) {
       setLocation("/");
     }
   }, [user, isLoading, setLocation]);
+
+  const handleCreateGroup = (e: React.FormEvent) => {
+    e.preventDefault();
+    addGroup(newGroupName, newGroupSubject, newGroupDesc);
+    setIsNewGroupOpen(false);
+    // Reset form
+    setNewGroupName("");
+    setNewGroupSubject("");
+    setNewGroupDesc("");
+  };
 
   if (isLoading || !user) return null;
 
@@ -30,16 +67,74 @@ export default function Dashboard() {
               <h1 className="text-3xl font-bold mb-2">Hello, {user.name.split(' ')[0]} 👋</h1>
               <p className="text-muted-foreground">Ready to crush your midterms? You have 3 study sessions today.</p>
             </div>
-            <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl h-11 px-6 shadow-lg shadow-primary/20">
-              <PlusCircle className="mr-2 w-5 h-5" /> Create New Group
-            </Button>
+            
+            <Dialog open={isNewGroupOpen} onOpenChange={setIsNewGroupOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl h-11 px-6 shadow-lg shadow-primary/20">
+                  <PlusCircle className="mr-2 w-5 h-5" /> Create New Group
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass border-white/10 sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Create Study Group</DialogTitle>
+                  <DialogDescription>
+                    Start a new community for your class or study topic.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleCreateGroup} className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Group Name</Label>
+                    <Input 
+                      id="name" 
+                      placeholder="e.g. Calculus 101 Finals" 
+                      value={newGroupName}
+                      onChange={(e) => setNewGroupName(e.target.value)}
+                      required
+                      className="bg-black/20 border-white/10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="subject">Subject</Label>
+                    <Select onValueChange={setNewGroupSubject} required>
+                      <SelectTrigger className="bg-black/20 border-white/10">
+                        <SelectValue placeholder="Select a subject" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Mathematics">Mathematics</SelectItem>
+                        <SelectItem value="Physics">Physics</SelectItem>
+                        <SelectItem value="Computer Science">Computer Science</SelectItem>
+                        <SelectItem value="Chemistry">Chemistry</SelectItem>
+                        <SelectItem value="Biology">Biology</SelectItem>
+                        <SelectItem value="Arts">Arts</SelectItem>
+                        <SelectItem value="History">History</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea 
+                      id="description" 
+                      placeholder="What is this group about?" 
+                      value={newGroupDesc}
+                      onChange={(e) => setNewGroupDesc(e.target.value)}
+                      required
+                      className="bg-black/20 border-white/10 resize-none"
+                    />
+                  </div>
+                  <DialogFooter className="pt-4">
+                    <Button type="submit" className="w-full bg-primary hover:bg-primary/90">Create Group</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { label: "Study Hours", value: "24.5", change: "+12%", color: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/20" },
-              { label: "Active Groups", value: "5", change: "Active", color: "from-purple-500/20 to-pink-500/20", border: "border-purple-500/20" },
+              { label: "Active Groups", value: groups.length.toString(), change: "Active", color: "from-purple-500/20 to-pink-500/20", border: "border-purple-500/20" },
               { label: "Tasks Completed", value: "18", change: "On Track", color: "from-green-500/20 to-emerald-500/20", border: "border-green-500/20" },
             ].map((stat, i) => (
               <motion.div 
@@ -69,7 +164,7 @@ export default function Dashboard() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {dummyGroups.map((group, i) => (
+              {groups.map((group, i) => (
                 <Link key={group.id} href={`/group/${group.id}`}>
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -116,6 +211,7 @@ export default function Dashboard() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
+                onClick={() => setIsNewGroupOpen(true)}
                 className="rounded-2xl border border-dashed border-white/10 hover:border-primary/50 hover:bg-white/5 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 min-h-[280px] text-muted-foreground hover:text-primary"
               >
                 <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
